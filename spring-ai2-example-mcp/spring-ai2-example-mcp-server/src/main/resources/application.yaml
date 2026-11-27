@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: spring-ai2-example-mcp-server
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: mcp-server
+        version: 1.0.0
+        type: sync  # sync | async
+        instructions: "提供按照城市名的的模拟天气预报查询（演示数据）"
+        annotation-scanner: # 注解扫描
+          enabled: true
+        protocol: streamable  # 使用协议 streamable | http | sse 客户端和服务端需要协议一致
+server:
+  port: 8080

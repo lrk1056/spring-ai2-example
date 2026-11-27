@@ -36,3 +36,5 @@ build/
 
 ### 本地工具配置 ###
 .mcp.json
+**/${project.build.directory}
+**/.claude
