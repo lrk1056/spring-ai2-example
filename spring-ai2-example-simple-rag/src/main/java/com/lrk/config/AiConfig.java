@@ -1,0 +1,21 @@
+package com.lrk.config;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class AiConfig {
+
+    /**
+     * OpenAI 的聊天模型
+     */
+    @Bean
+    public ChatClient openAiChatClient(OpenAiChatModel model) {
+        return ChatClient
+                .builder(model)
+                .build();
+    }
+
+}
