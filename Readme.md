@@ -71,5 +71,8 @@ Spring AI 2 的特性示例集合，每个特性对应一个独立模块。
 - [spring-ai2-example-multimodality](spring-ai2-example-multimodality)
   - 多模态示例：`.media(...)` 携带图片发起多模态请求，流式输出图片理解结果
   - 接口：`/analyze-image`
+- [spring-ai2-example-decision-model](spring-ai2-example-decision-model)
+  - 决策模型示例（**Spring AI 2.1.0 正式版新增 API**，本模块已单独升级版本）：YesNo/Choice/Score 三种问题类型，从候选项中挑答案并报告概率，适合分类与守门（guardrail）场景，走本地 Ollama `d1-omni:600m`，输入与问题均为中文
+  - 接口：`/decision/triage`（三种问题一次问完）、`/decision/threshold`（isYes 概率阈值）、`/decision/choice-rank`（选择题概率排行）、`/decision/fields-input`（结构化字段输入）、`/decision/guardrail`（对话输入守门）、`/decision/score-reading`（Score 三种读法）、`/decision/metadata`（token 用量）
 
-> 注意：运行前请在各模块 `application.yaml` 中配置自己的 API Key（`spring.ai.openai.api-key`）。
+> 注意：运行前请在各模块 `application.yaml` 中配置自己的 API Key（`spring.ai.openai.api-key`）；decision-model 模块走本地 Ollama 无需 Key。

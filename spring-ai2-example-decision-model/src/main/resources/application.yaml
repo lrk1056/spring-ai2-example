@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: spring-ai2-example
+  autoconfigure:
+    # 本模块决策模型走 Ollama 实现，排除 OpenAI 的决策自动配置
+    exclude: org.springframework.ai.model.openai.autoconfigure.OpenAiDecisionAutoConfiguration
+  ai:
+    openai:
+      api-key: ${AI_DASHSCOPE_API_KEY}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      chat:
+        model: qwen3.7-plus
+    ollama:
+      base-url: http://localhost:11434
+      decision:
+        model: d1-omni:600m  # 默认决策模型
+      init:
+        pull-model-strategy: when_missing   # 启动时本地缺模型就自动拉取（d1-omni:600m 约 850MB）
+        # 只初始化决策模型，跳过 chat/embedding（否则会把 Ollama 默认聊天模型 mistral 也拉下来）
+        chat:
+          include: false
+        embedding:
+          include: false
+
+server:
+  port: 8080
