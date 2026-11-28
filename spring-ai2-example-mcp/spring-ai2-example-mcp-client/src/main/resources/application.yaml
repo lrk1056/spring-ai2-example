@@ -11,10 +11,28 @@ spring:
       client:
         enabled: true
         type: sync
+        # MCP 请求超时时间，stdio 方式首次通过 npx 拉起 12306-mcp 需要下载依赖，适当加长
+        request-timeout: 120s
+        # 是否在启动时主动与各 MCP 服务端建立连接（initialize 握手）。
+        # false = 类似 Dubbo 的 check=false：启动阶段不连接服务端，服务端不在线也能正常启动；
+        # 连接推迟到第一次真正调用工具时才建立（惰性初始化）。
+        initialized: false
         streamable-http:
           connections:
-            my-mcp-server:
+            # 本地自建的天气 MCP 服务（streamable-http 传输，需先启动 mcp-server）
+            my-mcp-weather-server:
               url: http://localhost:8080
+        stdio:
+          connections:
+            # 外部 12306 火车票查询 MCP 服务（stdio 传输，由客户端自动拉起 npx 子进程，无需手动启动）
+            # 工具列表：get-current-date / get-stations-code-in-city / get-station-code-of-citys
+            #          / get-station-code-by-names / get-station-by-telecode / get-tickets
+            #          / get-interline-tickets / get-train-route-stations
+            12306-mcp:
+              command: npx
+              args:
+                - -y
+                - 12306-mcp
 
 server:
   port: 8081
