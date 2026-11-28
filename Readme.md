@@ -18,7 +18,11 @@ Spring AI 2 的特性示例集合，每个特性对应一个独立模块。
   - 接口：`/hello`、`/openAiChatDemo`、`/ollamaChatDemo`、`/openAiChatStreamResult`
 - [spring-ai2-example-usage-handling](spring-ai2-example-usage-handling)
   - usage handling 示例：从 `ChatResponse.getMetadata()` 读取 token 用量（`Usage`）、限流信息（`RateLimit`）与 prompt 缓存指标
-  - 接口：`/usage/metadata`（ChatModel 直调完整元数据）、`/usage/chat-client-usage`（ChatClient 拿 Usage）、`/usage/rate-limit`（限流 + EmptyRateLimit 判空）、`/usage/cache-metrics`（缓存指标 + 原生用量对象）、`/usage/multi-turn-note`（多步流程累计用量）
+  - 接口：`/usage/metadata`（ChatModel 直调完整元数据）
+  - `/usage/chat-client-usage`（ChatClient 拿 Usage）
+  - `/usage/rate-limit`（限流 + EmptyRateLimit 判空）
+  - `/usage/cache-metrics`（缓存指标 + 原生用量对象）
+  - `/usage/multi-turn-note`（多步流程累计用量）
 - [spring-ai2-example-advisor](spring-ai2-example-advisor)
   - advisor 示例：自定义 `MySimpleLoggerAdvisor`（同时实现 `CallAdvisor` / `StreamAdvisor`，打印请求与响应日志，通过 `getOrder()` 控制执行顺序）
 - [spring-ai2-example-prompt](spring-ai2-example-prompt)
@@ -27,6 +31,13 @@ Spring AI 2 的特性示例集合，每个特性对应一个独立模块。
 - [spring-ai2-example-structured-output](spring-ai2-example-structured-output)
   - 结构化输出示例：通过 `.entity(...)` 将模型回答直接映射为 Java 对象
   - 接口：`/structured-output/ask1`（映射为 record）、`/structured-output/ask2`（`ParameterizedTypeReference` 泛型 List）
+  - 官方文档进阶案例（`StructuredOutputDocsController`）：`/structured-output/docs/response-entity`（对象+元数据一起拿）
+  - `/docs/validate-schema`（校验失败自动带错重试）
+  - `/docs/provider-native`（服务商原生结构化输出）
+  - `/docs/native-with-validation`（双开关组合+容器 record 规避顶层数组限制）
+  - `/docs/map-converter-manual`（低阶 MapOutputConverter 两阶段）
+  - `/docs/list-converter`（非 JSON 列表）
+  - `/docs/lenient-converter`（自定义宽松转换器剥 markdown 围栏）
 - [spring-ai2-example-chat-memory](spring-ai2-example-chat-memory)
   - chat memory 示例：通过 `ChatMemory` + 会话 ID（`ChatMemory.CONVERSATION_ID`）实现多轮对话记忆
   - 接口：`/openAiChatClientWithMemoryDemo?question=&convId=`（相同 convId 共享同一份上下文）

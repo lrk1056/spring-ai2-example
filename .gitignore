@@ -38,3 +38,5 @@ build/
 .mcp.json
 **/${project.build.directory}
 **/.claude
+
+spring-ai2-example-init/
