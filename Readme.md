@@ -45,7 +45,15 @@ Spring AI 2 的特性示例集合，每个特性对应一个独立模块。
   - [spring-ai2-example-mcp-client](spring-ai2-example-mcp/spring-ai2-example-mcp-client)
     - MCP 客户端：通过 `SyncMcpToolCallbackProvider` 连接上述 server，模型按需调用远端工具，端口 8081
     - 接口：`/debug/mcp-tools`（查看已注册工具）、`/ai/mcp`（调用 MCP 工具回答）
-    - 使用前需先启动 mcp-server
+  - 外部 MCP 服务接入示例（12306 火车票查询）
+    - 通过 **stdio** 传输接入开源 [12306-mcp](https://github.com/Joooook/12306-mcp)：客户端启动时自动执行 `npx -y 12306-mcp` 拉起子进程，无需手动启动外部服务（与本地 streamable-http 方式互为对照）
+    - `My12306Controller` 演示**多步工具调用**：模型自主完成 `get-current-date`（解析"明天"）→ `get-station-code-of-citys`（城市转车站编码）→ `get-tickets`（按 G 字头 + 12 点后过滤查余票）
+    - 使用 `McpToolFilter` 按连接名过滤工具集：同时连接天气服务与 12306 时，每个场景只把对应的工具子集交给模型
+    - 接口：`/12306/tickets`（查"明天下午 12 点后北京→郑州高铁"）、`/12306/debug/tools`（按连接名分组列出全部外部工具）
+  - 惰性连接（类似 Dubbo 的 `check=false`）
+    - `spring.ai.mcp.client.initialized=false`：启动阶段不与各 MCP 服务端做 initialize 握手，服务端不在线也能正常启动
+    - 连接推迟到首次真正调用工具时才建立（MCP SDK `LifecycleInitializer` 的惰性初始化），故障从"启动期"推迟到"调用期"
+    - 注意：stdio 传输首次拉起 npx 子进程需下载依赖，`request-timeout` 已适当加长（120s）
 - [spring-ai2-example-multimodality](spring-ai2-example-multimodality)
   - 多模态示例：`.media(...)` 携带图片发起多模态请求，流式输出图片理解结果
   - 接口：`/analyze-image`
