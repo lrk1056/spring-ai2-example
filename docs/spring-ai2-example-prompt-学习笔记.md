@@ -5,9 +5,13 @@
 
 ## 先聊聊：Prompt 到底是个啥
 
-说白了，Prompt 就是你发给大模型的"话"。同样一个模型，你话怎么组织、怎么说，出来的效果天差地别。所以玩好 AI 应用，第一件事就是把 Prompt 这件事搞明白。
+说白了，Prompt 就是你发给大模型的"话"。
 
-Spring AI 处理 Prompt 的思路，你可以想象成 Spring MVC 处理"视图"：写一大段带占位符的文本，然后程序运行时把真实数据填进去。就好比一条带 `?` 占位符的 SQL，模板是死的，参数是活的。
+同样一个模型，你话怎么组织、怎么说，出来的效果天差地别。所以玩好 AI 应用，第一件事就是把 Prompt 这件事搞明白。
+
+Spring AI 处理 Prompt 的思路，你可以想象成 Spring MVC 处理"视图"：写一大段带占位符的文本，然后程序运行时把真实数据填进去。
+
+就好比一条带 `?` 占位符的 SQL，模板是死的，参数是活的。
 
 ## 三个核心概念，一图看懂
 
@@ -43,9 +47,11 @@ PromptTemplate promptTemplate = new PromptTemplate("讲一个{adjective}的笑�
 Prompt prompt = promptTemplate.create(Map.of("adjective", "冷笑话", "topic", "程序员"));
 ```
 
-`{adjective}` 和 `{topic}` 就是挖好的坑，`Map.of(...)` 就是往坑里填土。默认用 StringTemplate 引擎渲染，`{}` 是默认分隔符。
+`{adjective}` 和 `{topic}` 就是挖好的坑，`Map.of(...)` 就是往坑里填土。
 
-## 文档里的 6 个案例
+默认用 StringTemplate 引擎渲染，`{}` 是默认分隔符。
+
+## 文档里的 6 个案例（模块里全部能跑）
 
 启动模块后逐个试（默认端口 8080）：
 
@@ -64,9 +70,15 @@ Prompt prompt = promptTemplate.create(Map.of("adjective", adjective, "topic", to
 return openAiChatModel.call(prompt).getResult().getOutput().getText();
 ```
 
-试试：`curl "http://localhost:8080/prompt/template-basic?adjective=冷笑话&topic=程序员"`
+试试：`curl -G "http://localhost:8080/prompt/template-basic" --data-urlencode "adjective=冷笑话" --data-urlencode "topic=程序员"`
 
-**要点**：这里没用 ChatClient，直接用的 `ChatModel.call(Prompt)`——这是 Spring AI 最底层的调用姿势，文档说 ChatClient 之于 ChatModel，就像 JdbcClient 之于 JDBC。想搞清楚底层，从这个入口看最合适。
+你会看到：模型真的讲了个程序员冷笑话（Oct 31 == Dec 25 那个）。
+
+**要点**：
+
+- 这里没用 ChatClient，直接用的 `ChatModel.call(Prompt)`——这是 Spring AI 最底层的调用姿势。
+- 文档说 ChatClient 之于 ChatModel，就像 JdbcClient 之于 JDBC。
+- 想搞清楚底层，从这个入口看最合适。
 
 ### 案例 2：System + User 组合拳 — GET /prompt/template-roles
 
@@ -85,9 +97,14 @@ Message systemMessage = systemPromptTemplate.createMessage(Map.of("name", "小�
 Prompt prompt = new Prompt(List.of(userMessage, systemMessage));
 ```
 
-试试：`curl "http://localhost:8080/prompt/template-roles?topic=向量数据库"`
+试试：`curl -G "http://localhost:8080/prompt/template-roles" --data-urlencode "topic=向量数据库"`
 
-你会看到模型真的用单口相声的口吻回答。**要点**：`SystemPromptTemplate` 是专门渲染 system 消息的模板类；多条消息用 `List.of(...)` 按顺序组合，顺序一般 system 在前。
+你会看到：模型真的用单口相声的口吻回答，开头还报了"小智"的名号。
+
+**要点**：
+
+- `SystemPromptTemplate` 是专门渲染 system 消息的模板类。
+- 多条消息用 `List.of(...)` 按顺序组合，顺序一般 system 在前。
 
 ### 案例 3：Assistant 消息 + 少样本示例 — GET /prompt/template-assistant
 
@@ -102,13 +119,20 @@ Message userQuestion = new UserMessage("书籍：" + bookName);
 Prompt prompt = new Prompt(List.of(systemMessage, userExample, assistantExample, userQuestion));
 ```
 
-试试：`curl "http://localhost:8080/prompt/template-assistant?bookName=深入理解Java虚拟机"`
+试试：`curl -G "http://localhost:8080/prompt/template-assistant" --data-urlencode "bookName=深入理解Java虚拟机"`
 
-输出的评价风格和字数会明显模仿示例。**要点**：AssistantMessage 不只是"历史记录"，它还能当"示范"用。
+你会看到：输出的评价风格和字数明显在模仿示例（"JVM领域权威经典，原理与实践并重，字字珠玑，强烈推荐"）。
+
+**要点**：
+
+- AssistantMessage 不只是"历史记录"，它还能当"示范"用。
+- Few-shot 的本质：与其解释格式，不如直接给样例。
 
 ### 案例 4：自定义分隔符，专治 JSON 冲突 — GET /prompt/template-delimiter
 
-文档特别提醒：模板里要写 JSON 的话，默认的 `{}` 分隔符会和 JSON 的 `{}` 打架（渲染引擎会误以为 JSON 大括号是占位符）。解法是换个分隔符，比如 `<` `>`：
+文档特别提醒：模板里要写 JSON 的话，默认的 `{}` 分隔符会和 JSON 的 `{}` 打架（渲染引擎会误以为 JSON 大括号是占位符）。
+
+解法是换个分隔符，比如 `<` `>`：
 
 ```java
 PromptTemplate promptTemplate = PromptTemplate.builder()
@@ -126,11 +150,18 @@ PromptTemplate promptTemplate = PromptTemplate.builder()
 
 试试：`curl "http://localhost:8080/prompt/template-delimiter"`
 
-**要点**：JSON 的 `{}` 原样保留，占位符换成 `<title>` 这种写法。这个坑不做示例很容易踩：模板里一写 JSON 就渲染报错，还以为是 StringTemplate 的 bug。
+你会看到：模型严格输出了 JSON，且 `<title>` 等占位符被正确替换。
+
+**要点**：
+
+- JSON 的 `{}` 原样保留，占位符换成 `<title>` 这种写法。
+- 这个坑不做示例很容易踩：模板里一写 JSON 就渲染报错，还以为是 StringTemplate 的 bug。
 
 ### 案例 5：模板写成文件，别硬编码 — GET /prompt/template-resource
 
-把模板字符串写死在 Java 里，改一句话都要重新编译。文档给的姿势是用 Spring 的 `Resource` 抽象，把模板放到文件里：
+把模板字符串写死在 Java 里，改一句话都要重新编译。
+
+文档给的姿势是用 Spring 的 `Resource` 抽象，把模板放到文件里：
 
 ```java
 @Value("classpath:/prompts/it-consultant-system-message.st")
@@ -143,9 +174,15 @@ Message systemMessage = systemPromptTemplate.createMessage(Map.of("role", role, 
 
 模板文件在 `src/main/resources/prompts/it-consultant-system-message.st`。
 
-试试：`curl "http://localhost:8080/prompt/template-resource?role=资深架构师&tone=严谨&question=微服务拆分有哪些原则？"`
+试试：`curl -G "http://localhost:8080/prompt/template-resource" --data-urlencode "role=资深架构师" --data-urlencode "tone=严谨" --data-urlencode "question=微服务拆分有哪些原则？"`
 
-**要点**：`.st` 是 StringTemplate 的惯例后缀；模板集中放 `resources/prompts/` 目录管理，改提示词不用动 Java 代码。真实项目里 prompt 会反复调优，这个习惯能省很多事。
+你会看到：模型以"严谨的资深架构师"人设回答，先给结论再展开。
+
+**要点**：
+
+- `.st` 是 StringTemplate 的惯例后缀。
+- 模板集中放 `resources/prompts/` 目录管理，改提示词不用动 Java 代码。
+- 真实项目里 prompt 会反复调优，这个习惯能省很多事。
 
 ### 案例 6：只渲染不发请求 — GET /prompt/template-render-only
 
@@ -155,11 +192,14 @@ Message systemMessage = systemPromptTemplate.createMessage(Map.of("role", role, 
 String rendered = promptTemplate.render(Map.of("adjective", adjective, "topic", topic));
 ```
 
-试试：`curl "http://localhost:8080/prompt/template-render-only?adjective=冷笑话&topic=程序员"`
+试试：`curl -G "http://localhost:8080/prompt/template-render-only" --data-urlencode "adjective=冷笑话" --data-urlencode "topic=程序员"`
 
-返回：`渲染后的 Prompt：讲一个冷笑话的笑话，主题是程序员`
+你会看到：`渲染后的 Prompt：讲一个冷笑话的笑话，主题是程序员`
 
-**要点**：`render()` 只做字符串替换不调模型（零成本）；`create()` 才会生成 Prompt 对象交给模型。
+**要点**：
+
+- `render()` 只做字符串替换，不调模型（零成本）。
+- `create()` 才会生成 Prompt 对象交给模型。
 
 ## 几个 API 的关系，别绕晕
 
@@ -171,7 +211,11 @@ String rendered = promptTemplate.render(Map.of("adjective", adjective, "topic", 
 | `PromptTemplate.create(model)` | 渲染并包成 Prompt 对象，配合 ChatModel 用 |
 | `SystemPromptTemplate.createMessage(model)` | 渲染并包成 system 角色的 Message |
 
-`PromptTemplate` 实现了三个接口族（StringActions / MessageActions / Actions），分别对应"渲染成字符串"、"渲染成 Message"、"渲染成 Prompt"三种产出，方法名基本就是 `render / createMessage / create` 三兄弟。
+`PromptTemplate` 实现了三个接口族，对应三种产出：
+
+- `PromptTemplateStringActions` → 渲染成字符串（`render`）
+- `PromptTemplateMessageActions` → 渲染成 Message（`createMessage`）
+- `PromptTemplateActions` → 渲染成完整 Prompt（`create`）
 
 ## 写好 Prompt 的几个常识（文档 Prompt Engineering 一节的精华）
 
@@ -182,11 +226,19 @@ String rendered = promptTemplate.render(Map.of("adjective", adjective, "topic", 
 3. **用户输入**：真正的问题
 4. **输出格式**：要 JSON 就明说 JSON（但别指望它 100% 听话，它可能给你"这是您的 JSON：{...}"这种前缀）
 
-另外几个技巧：给示例（Few-shot）、让它一步步想（Chain-of-Thought）、复杂任务先分析再行动（ReAct）。文档还提了个有意思的研究结论：在 Prompt 里加一句"深呼吸，一步步来"都能提升解题效果——Prompt 的措辞真的有用。
+另外几个技巧：
+
+- 给示例（Few-shot）
+- 让它一步步想（Chain-of-Thought）
+- 复杂任务先分析再行动（ReAct）
+
+文档还提了个有意思的研究结论：在 Prompt 里加一句"深呼吸，一步步来"都能提升解题效果——Prompt 的措辞真的有用。
 
 ## Token 是什么，为什么要在乎
 
-模型不认识"字"，它处理的是 token（可以理解为 0.75 个词左右的碎片）。 Shakespeare 全集约 90 万词 ≈ 120 万 token。跟你相关的三件事：
+模型不认识"字"，它处理的是 token（可以理解为 0.75 个词左右的碎片）。Shakespeare 全集约 90 万词 ≈ 120 万 token。
+
+跟你相关的三件事：
 
 - **计费按 token 算**：输入和输出都算钱，Prompt 越啰嗦越贵
 - **模型有上下文窗口上限**：超出上限的内容直接不处理，别把一整本书塞进去问"哈姆雷特讲了啥"

@@ -16,6 +16,9 @@ Spring AI 2 的特性示例集合，每个特性对应一个独立模块。
 - [spring-ai2-example-helloword](spring-ai2-example-helloword)
   - HelloWord 项目，ChatClient 最基础的同步对话与流式对话（Flux）
   - 接口：`/hello`、`/openAiChatDemo`、`/ollamaChatDemo`、`/openAiChatStreamResult`
+- [spring-ai2-example-usage-handling](spring-ai2-example-usage-handling)
+  - usage handling 示例：从 `ChatResponse.getMetadata()` 读取 token 用量（`Usage`）、限流信息（`RateLimit`）与 prompt 缓存指标
+  - 接口：`/usage/metadata`（ChatModel 直调完整元数据）、`/usage/chat-client-usage`（ChatClient 拿 Usage）、`/usage/rate-limit`（限流 + EmptyRateLimit 判空）、`/usage/cache-metrics`（缓存指标 + 原生用量对象）、`/usage/multi-turn-note`（多步流程累计用量）
 - [spring-ai2-example-advisor](spring-ai2-example-advisor)
   - advisor 示例：自定义 `MySimpleLoggerAdvisor`（同时实现 `CallAdvisor` / `StreamAdvisor`，打印请求与响应日志，通过 `getOrder()` 控制执行顺序）
 - [spring-ai2-example-prompt](spring-ai2-example-prompt)
